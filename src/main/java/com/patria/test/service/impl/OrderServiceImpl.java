@@ -1,0 +1,218 @@
+package com.patria.test.service.impl;
+
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+
+import com.patria.test.dto.request.OrderEditRequest;
+import com.patria.test.dto.request.OrderListRequest;
+import com.patria.test.dto.request.OrderSaveRequest;
+import com.patria.test.dto.response.AppResponse;
+import com.patria.test.dto.response.OrderResponse;
+import com.patria.test.dto.response.PaginationResponse;
+import com.patria.test.dto.type.InventoryTypeEnum;
+import com.patria.test.entity.Inventory;
+import com.patria.test.entity.Item;
+import com.patria.test.entity.Order;
+import com.patria.test.exception.AppException;
+import com.patria.test.filter.OrderFilter;
+import com.patria.test.repository.InventoryRepository;
+import com.patria.test.repository.OrderRepository;
+import com.patria.test.serializer.OrderSerializer;
+import com.patria.test.service.OrderService;
+
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class OrderServiceImpl implements OrderService {
+
+    private final OrderRepository orderRepository;
+    private final InventoryRepository inventoryRepository;
+    private final OrderSerializer orderSerializer;
+    private final OrderFilter orderFilter;
+    private final ItemServiceImpl itemServiceImpl;
+
+    @Override
+    public AppResponse<List<OrderResponse>> list(OrderListRequest request) {
+        try {
+            Pageable pageable = PageRequest.of((request.getPage() - 1), request.getPerPage());
+            Page<com.patria.test.entity.Order> orders = orderRepository.findAll(orderFilter.specification(request),
+                    pageable);
+            return AppResponse.<List<OrderResponse>>builder()
+                    .success(true)
+                    .data(orders.stream().map(order -> {
+                        try {
+                            return orderSerializer.serialize(order);
+                        } catch (Exception e) {
+                            throw new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error!", e);
+                        }
+                    }).toList())
+                    .pagination(PaginationResponse.builder()
+                            .currentPage(orders.getNumber() + 1)
+                            .totalPage(orders.getTotalPages())
+                            .perPage(orders.getSize())
+                            .total(orders.getTotalElements())
+                            .count(orders.getNumberOfElements())
+                            .hasNext(orders.hasNext())
+                            .hasPrevious(orders.hasPrevious())
+                            .hasContent(orders.hasContent())
+                            .build())
+                    .message("Success get data")
+                    .build();
+        } catch (Exception e) {
+            throw new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error!", e);
+        }
+    }
+
+    @Override
+    public AppResponse<OrderResponse> get(String id) {
+        return AppResponse.<OrderResponse>builder()
+                .success(true)
+                .data(orderRepository.findById(id)
+                        .map(order -> {
+                            try {
+                                return orderSerializer.serialize(order);
+                            } catch (Exception e) {
+                                throw new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error!", e);
+                            }
+                        })
+                        .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Order not found!")))
+                .message("Success get data")
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public AppResponse<OrderResponse> save(OrderSaveRequest request) {
+        Item item = itemServiceImpl.getItemById(request.getItemId());
+
+        if (Boolean.FALSE.equals(isStockReady(item, request.getQty()))) {
+            throw new AppException(HttpStatus.BAD_REQUEST.value(), "Stock is not available!");
+        }
+
+        try {
+            Inventory inventory = Inventory.builder()
+                    .item(item)
+                    .qty(request.getQty())
+                    .type(InventoryTypeEnum.W)
+                    .build();
+
+            inventoryRepository.save(inventory);
+
+            Order order = Order.builder()
+                    .orderNo(generateOrderNo())
+                    .item(item)
+                    .qty(request.getQty())
+                    .price(item.getPrice())
+                    .inventory(inventory)
+                    .build();
+
+            Order savedItem = orderRepository.save(order);
+            OrderResponse orderResponse = orderSerializer.serialize(savedItem);
+
+            return AppResponse.<OrderResponse>builder()
+                    .success(true)
+                    .data(orderResponse)
+                    .message("Order created successfully")
+                    .build();
+        } catch (Exception e) {
+            throw new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error!", e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public AppResponse<OrderResponse> edit(OrderEditRequest request) {
+        Item item = itemServiceImpl.getItemById(request.getItemId());
+
+        if (Boolean.FALSE.equals(isStockReady(item, request.getQty()))) {
+            throw new AppException(HttpStatus.BAD_REQUEST.value(), "Stock is not available!");
+        }
+        
+        try{
+            Order order = orderRepository.findById(request.getOrderNo())
+                    .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Order not found!"));
+            
+            order.setPrice(item.getPrice());
+            order.setQty(request.getQty());
+
+            if(!order.getItem().equals(item)){
+                order.setItem(item);
+
+                inventoryRepository.delete(order.getInventory());
+
+                Inventory newInventory = Inventory.builder()
+                        .item(item)
+                        .qty(request.getQty())
+                        .type(InventoryTypeEnum.W)
+                        .build();
+
+                inventoryRepository.save(newInventory);
+                order.setInventory(newInventory);
+            }
+
+            Order savedItem = orderRepository.save(order);
+            OrderResponse orderResponse = orderSerializer.serialize(savedItem);
+
+            return AppResponse.<OrderResponse>builder()
+                    .success(true)
+                    .data(orderResponse)
+                    .message("Order updated successfully")
+                    .build();
+            
+        }catch(Exception e){
+            throw new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error!", e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public AppResponse<OrderResponse> delete(String id) {
+        try{
+            Order order = orderRepository.findById(id)
+                    .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Order not found!"));
+
+            orderRepository.delete(order);
+
+            OrderResponse orderResponse = orderSerializer.serialize(order);
+
+            return AppResponse.<OrderResponse>builder()
+                    .success(true)
+                    .data(orderResponse)
+                    .message("Order deleted successfully")
+                    .build();
+        }catch(Exception e){
+            throw new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error!", e);
+        }
+    }
+
+    private Boolean isStockReady(Item item, Integer qty) {
+        int stock = item.getInventories().stream().distinct()
+                .mapToInt(inv -> inv.getType() == InventoryTypeEnum.T
+                        ? inv.getQty()
+                        : inv.getType() == InventoryTypeEnum.W
+                                ? -inv.getQty()
+                                : 0)
+                .sum();
+
+        return stock >= qty;
+    }
+
+    private String generateOrderNo(){
+        Long lastId = orderRepository.findTopByOrderByOrderNoDesc()
+                .map(order -> {
+                    String lastOrderNo = order.getOrderNo();
+                    return Long.parseLong(lastOrderNo.replace("O", ""));
+                })
+                .orElse(0L);
+
+        return "O" + (lastId + 1);
+    }
+
+}

@@ -1,0 +1,34 @@
+server:
+  port: ${APP_PORT}
+  
+springdoc:
+  api-docs:
+    enabled: true
+    groups:
+      enabled: false
+    path: /v1/docs
+  swagger-ui:
+    enabled: true
+    path: /v1/
+    persist-authorization: true
+    operations-sorter: method
+    tags-sorter: alpha
+    filter: true
+    syntax-highlight:
+      theme: monokai
+    doc-expansion: none
+    layout: BaseLayout
+
+spring:
+    application:
+        name: test
+    datasource:
+        url: jdbc:h2:tcp://${DB_HOST}:${DB_PORT}/${DB_NAME}
+        driver-class-name: org.h2.Driver
+        username: ${DB_USERNAME}
+        password: ${DB_PASSWORD}
+    flyway:
+        locations: "db/migration,classpath:db/seeder"
+        validate-migration-naming: true
+        table: migrations
+        validate-on-migrate: false
