@@ -26,7 +26,9 @@
                   "    pm.expect(jsonData).to.have.property('data');",
                   "});"
                 ],
-                "type": "text/javascript"
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
               }
             }
           ],
@@ -40,13 +42,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/v1/items?page=1&perPage=5",
+              "raw": "{{base_url}}/v1/item?page=1&perPage=5",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "v1",
-                "items"
+                "item"
               ],
               "query": [
                 {
@@ -79,13 +81,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/v1/items/8CWpNspq7fouXqQc5UoIJg==",
+              "raw": "{{base_url}}/v1/item/8CWpNspq7fouXqQc5UoIJg==",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "v1",
-                "items",
+                "item",
                 "8CWpNspq7fouXqQc5UoIJg=="
               ]
             }
@@ -124,14 +126,13 @@
               "raw": "{\n    \"name\": \"test\",\n    \"price\": 99\n}"
             },
             "url": {
-              "raw": "{{base_url}}/v1/items/save",
+              "raw": "{{base_url}}/v1/item",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "v1",
-                "items",
-                "save"
+                "item"
               ]
             }
           },
@@ -153,14 +154,13 @@
               "raw": "{\n    \"id\": \"8CWpNspq7fouXqQc5UoIJg==\",\n    \"name\": \"test\",\n    \"price\": 100\n}"
             },
             "url": {
-              "raw": "{{base_url}}/v1/items/edit",
+              "raw": "{{base_url}}/v1/item",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "v1",
-                "items",
-                "edit"
+                "item"
               ]
             }
           },
@@ -178,13 +178,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/v1/items/8CWpNspq7fouXqQc5UoIJg==",
+              "raw": "{{base_url}}/v1/item/8CWpNspq7fouXqQc5UoIJg==",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "v1",
-                "items",
+                "item",
                 "8CWpNspq7fouXqQc5UoIJg=="
               ]
             }
@@ -312,14 +312,13 @@
               "raw": "{\n    \"itemId\": \"8CWpNspq7fouXqQc5UoIJg==\",\n    \"qty\": 5\n}"
             },
             "url": {
-              "raw": "{{base_url}}/v1/order/save",
+              "raw": "{{base_url}}/v1/order",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "v1",
-                "order",
-                "save"
+                "order"
               ]
             }
           },
@@ -341,14 +340,13 @@
               "raw": "{\n    \"id\": \"O1\",\n    \"itemId\": \"8CWpNspq7fouXqQc5UoIJg==\",\n    \"qty\": 10\n}"
             },
             "url": {
-              "raw": "{{base_url}}/v1/order/edit",
+              "raw": "{{base_url}}/v1/order",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "v1",
-                "order",
-                "edit"
+                "order"
               ]
             }
           },
@@ -400,7 +398,9 @@
                   "    pm.expect(jsonData).to.have.property('data');",
                   "});"
                 ],
-                "type": "text/javascript"
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
               }
             }
           ],
@@ -414,13 +414,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/v1/inventories?page=1&perPage=5",
+              "raw": "{{base_url}}/v1/inventory?page=1&perPage=5",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "v1",
-                "inventories"
+                "inventory"
               ],
               "query": [
                 {
@@ -453,13 +453,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/v1/inventories/8CWpNspq7fouXqQc5UoIJg==",
+              "raw": "{{base_url}}/v1/inventory/8CWpNspq7fouXqQc5UoIJg==",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "v1",
-                "inventories",
+                "inventory",
                 "8CWpNspq7fouXqQc5UoIJg=="
               ]
             }
@@ -498,14 +498,13 @@
               "raw": "{\n    \"itemId\": \"8CWpNspq7fouXqQc5UoIJg==\",\n    \"quantity\": 100\n}"
             },
             "url": {
-              "raw": "{{base_url}}/v1/inventories/save",
+              "raw": "{{base_url}}/v1/inventory",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "v1",
-                "inventories",
-                "save"
+                "inventory"
               ]
             }
           },
@@ -527,14 +526,13 @@
               "raw": "{\n    \"id\": \"8CWpNspq7fouXqQc5UoIJg==\",\n    \"itemId\": \"DPKK8PkRGoL0XJgb5v-sFg==\",\n    \"quantity\": 150\n}"
             },
             "url": {
-              "raw": "{{base_url}}/v1/inventories/edit",
+              "raw": "{{base_url}}/v1/inventory",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "v1",
-                "inventories",
-                "edit"
+                "inventory"
               ]
             }
           },
@@ -552,13 +550,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/v1/inventories/DPKK8PkRGoL0XJgb5v-sFg==",
+              "raw": "{{base_url}}/v1/inventory/DPKK8PkRGoL0XJgb5v-sFg==",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "v1",
-                "inventories",
+                "inventory",
                 "DPKK8PkRGoL0XJgb5v-sFg=="
               ]
             }
