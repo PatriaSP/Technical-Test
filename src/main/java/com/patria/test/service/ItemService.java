@@ -1,23 +1,24 @@
 package com.patria.test.service;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
 
 import com.patria.test.dto.request.ItemSaveRequest;
 import com.patria.test.dto.request.ItemEditRequest;
 import com.patria.test.dto.request.ItemListRequest;
-import com.patria.test.dto.response.AppResponse;
 import com.patria.test.dto.response.ItemResponse;
+import com.patria.test.entity.Item;
 
 public interface ItemService {
 
-    AppResponse<List<ItemResponse>> list(ItemListRequest request);
+    Page<Item> list(ItemListRequest request);
 
-    AppResponse<ItemResponse> get(String id);
+    ItemResponse get(String id);
 
-    AppResponse<ItemResponse> save(ItemSaveRequest request);
+    ItemResponse save(ItemSaveRequest request);
 
-    AppResponse<ItemResponse> edit(ItemEditRequest request);
+    ItemResponse edit(ItemEditRequest request);
 
-    AppResponse<ItemResponse> delete(String id);
+    void delete(String id);
 
+    Integer getStockByItem(Item item);
 }

@@ -1,23 +1,23 @@
 package com.patria.test.service;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
 
 import com.patria.test.dto.request.InventoryEditRequest;
 import com.patria.test.dto.request.InventoryListRequest;
 import com.patria.test.dto.request.InventorySaveRequest;
-import com.patria.test.dto.response.AppResponse;
 import com.patria.test.dto.response.InventoryResponse;
+import com.patria.test.entity.Inventory;
 
 public interface InventoryService {
 
-    AppResponse<List<InventoryResponse>> list(InventoryListRequest request);
+    Page<Inventory> list(InventoryListRequest request);
 
-    AppResponse<InventoryResponse> get(String id);
+    InventoryResponse get(String id);
 
-    AppResponse<InventoryResponse> save(InventorySaveRequest request);
+    InventoryResponse save(InventorySaveRequest request);
 
-    AppResponse<InventoryResponse> edit(InventoryEditRequest request);
+    InventoryResponse edit(InventoryEditRequest request);
 
-    AppResponse<InventoryResponse> delete(String id);
+    void delete(String id);
 
 }

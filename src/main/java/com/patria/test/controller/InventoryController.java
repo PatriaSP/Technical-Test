@@ -2,6 +2,8 @@ package com.patria.test.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +17,10 @@ import com.patria.test.dto.request.InventorySaveRequest;
 import com.patria.test.dto.request.InventoryEditRequest;
 import com.patria.test.dto.response.AppResponse;
 import com.patria.test.dto.response.InventoryResponse;
+import com.patria.test.dto.response.PaginationResponse;
+import com.patria.test.entity.Inventory;
+import com.patria.test.exception.AppException;
+import com.patria.test.serializer.InventorySerializer;
 import com.patria.test.service.InventoryService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -25,43 +31,81 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/v1/inventories")
+@RequestMapping("/v1/inventory")
 @Tag(name = "Inventory Controller")
 public class InventoryController {
 
         private final InventoryService inventoryService;
+        private final InventorySerializer inventorySerializer;
 
         @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
         public AppResponse<List<InventoryResponse>> inventories(
                         @RequestParam(required = false, defaultValue = "1") Integer page,
                         @RequestParam(required = false, defaultValue = "5") Integer perPage,
                         @RequestParam(required = false) String filter) {
-                InventoryListRequest request = InventoryListRequest.builder()
+
+                Page<Inventory> inventories = inventoryService.list(InventoryListRequest.builder()
                                 .page(page)
                                 .perPage(perPage)
                                 .filter(filter)
+                                .build());
+                return AppResponse.<List<InventoryResponse>>builder()
+                                .success(true)
+                                .data(inventories.stream().map(item -> {
+                                        try {
+                                                return inventorySerializer.serialize(item);
+                                        } catch (Exception e) {
+                                                throw new AppException(HttpStatus.INTERNAL_SERVER_ERROR,
+                                                                "Internal server error!", e);
+                                        }
+                                }).toList())
+                                .pagination(PaginationResponse.builder()
+                                                .currentPage(inventories.getNumber() + 1)
+                                                .totalPage(inventories.getTotalPages())
+                                                .perPage(inventories.getSize())
+                                                .total(inventories.getTotalElements())
+                                                .count(inventories.getNumberOfElements())
+                                                .hasNext(inventories.hasNext())
+                                                .hasPrevious(inventories.hasPrevious())
+                                                .hasContent(inventories.hasContent())
+                                                .build())
+                                .message("Success get data")
                                 .build();
-
-                return inventoryService.list(request);
         }
 
         @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
         public AppResponse<InventoryResponse> inventory(@PathVariable String id) {
-                return inventoryService.get(id);
+                return AppResponse.<InventoryResponse>builder()
+                                .success(true)
+                                .data(inventoryService.get(id))
+                                .message("Success get data")
+                                .build();
         }
 
-        @PostMapping(path = "/save", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+        @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
         public AppResponse<InventoryResponse> save(@Valid @RequestBody InventorySaveRequest request) {
-                return inventoryService.save(request);
+                return AppResponse.<InventoryResponse>builder()
+                    .success(true)
+                    .data(inventoryService.save(request))
+                    .message("Inventory saved successfully")
+                    .build();
         }
 
-        @PutMapping(path = "/edit", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+        @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
         public AppResponse<InventoryResponse> edit(@Valid @RequestBody InventoryEditRequest request) {
-                return inventoryService.edit(request);
+                return AppResponse.<InventoryResponse>builder()
+                    .success(true)
+                    .data(inventoryService.edit(request))
+                    .message("Inventory updated successfully")
+                    .build();
         }
 
         @DeleteMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
         public AppResponse<InventoryResponse> delete(@PathVariable String id) {
-                return inventoryService.delete(id);
+                inventoryService.delete(id);
+                return AppResponse.<InventoryResponse>builder()
+                    .success(true)
+                    .message("Inventory deleted successfully")
+                    .build();
         }
 }

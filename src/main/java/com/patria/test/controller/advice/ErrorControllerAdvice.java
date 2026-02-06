@@ -22,7 +22,7 @@ public class ErrorControllerAdvice {
                 .message(ex.getMessage())
                 .build();
         return ResponseEntity
-                .status(500)
+                .status(ex.getCode())
                 .body(errorResponse);
     }
 

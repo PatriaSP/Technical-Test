@@ -1,6 +1,6 @@
 package com.patria.test.service.impl;
 
-import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -11,13 +11,14 @@ import org.springframework.stereotype.Service;
 import com.patria.test.dto.request.ItemSaveRequest;
 import com.patria.test.dto.request.ItemEditRequest;
 import com.patria.test.dto.request.ItemListRequest;
-import com.patria.test.dto.response.AppResponse;
 import com.patria.test.dto.response.ItemResponse;
-import com.patria.test.dto.response.PaginationResponse;
+import com.patria.test.dto.type.InventoryTypeEnum;
 import com.patria.test.entity.Item;
 import com.patria.test.exception.AppException;
 import com.patria.test.filter.ItemFilter;
+import com.patria.test.repository.InventoryRepository;
 import com.patria.test.repository.ItemRepository;
+import com.patria.test.repository.OrderRepository;
 import com.patria.test.serializer.ItemSerializer;
 import com.patria.test.service.ItemService;
 import com.patria.test.util.AESUtil;
@@ -30,67 +31,37 @@ import lombok.RequiredArgsConstructor;
 public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
+    private final OrderRepository orderRepository;
+    private final InventoryRepository inventoryRepository;
     private final ItemSerializer itemSerializer;
     private final ItemFilter itemFilter;
 
     @Override
-    public AppResponse<List<ItemResponse>> list(ItemListRequest request) {
+    public Page<Item> list(ItemListRequest request) {
         try {
             Pageable pageable = PageRequest.of((request.getPage() - 1), request.getPerPage());
-            Page<Item> items = itemRepository.findAll(itemFilter.specification(request), pageable);
-            return AppResponse.<List<ItemResponse>>builder()
-                    .success(true)
-                    .data(items.stream().map(item -> {
-                        try {
-                            return itemSerializer.serialize(item);
-                        } catch (Exception e) {
-                            throw new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error!", e);
-                        }
-                    }).toList())
-                    .pagination(PaginationResponse.builder()
-                            .currentPage(items.getNumber() + 1)
-                            .totalPage(items.getTotalPages())
-                            .perPage(items.getSize())
-                            .total(items.getTotalElements())
-                            .count(items.getNumberOfElements())
-                            .hasNext(items.hasNext())
-                            .hasPrevious(items.hasPrevious())
-                            .hasContent(items.hasContent())
-                            .build())
-                    .message("Success get data")
-                    .build();
+            return itemRepository.findAll(itemFilter.specification(request), pageable);
         } catch (Exception e) {
             throw new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error!", e);
         }
     }
 
     @Override
-    public AppResponse<ItemResponse> get(String id) {
-        if (id == null || id.isBlank()) {
-            throw new AppException(HttpStatus.BAD_REQUEST.value(), "Invalid item id!");
-        }
-        Long decodedId = AESUtil.getDecryptedString(id);
-        if (decodedId == null) {
-            throw new AppException(HttpStatus.BAD_REQUEST.value(), "Invalid item id!");
-        }
-        return AppResponse.<ItemResponse>builder()
-                .success(true)
-                .data(itemRepository.findById(decodedId)
-                        .map(item -> {
-                            try {
-                                return itemSerializer.serialize(item);
-                            } catch (Exception e) {
-                                throw new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error!", e);
-                            }
-                        })
-                        .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Item not found!")))
-                .message("Success get data")
-                .build();
+    public ItemResponse get(String id) {
+        return Optional.ofNullable(getItemById(id))
+                .map(item -> {
+                    try {
+                        return itemSerializer.serialize(item, getStockByItem(item));
+                    } catch (Exception e) {
+                        throw new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error!", e);
+                    }
+                })
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Item not found!"));
     }
 
     @Override
     @Transactional
-    public AppResponse<ItemResponse> save(ItemSaveRequest request) {
+    public ItemResponse save(ItemSaveRequest request) {
         try {
             Item item = Item.builder()
                     .name(request.getName())
@@ -99,13 +70,9 @@ public class ItemServiceImpl implements ItemService {
 
             Item savedItem = itemRepository.save(item);
 
-            ItemResponse itemResponse = itemSerializer.serialize(savedItem);
-
-            return AppResponse.<ItemResponse>builder()
-                    .success(true)
-                    .data(itemResponse)
-                    .message("Item saved successfully")
-                    .build();
+            return itemSerializer.serialize(savedItem, getStockByItem(savedItem));
+        } catch (AppException e) {
+            throw e;
         } catch (Exception e) {
             throw new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error!", e);
         }
@@ -113,7 +80,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional
-    public AppResponse<ItemResponse> edit(ItemEditRequest request) {
+    public ItemResponse edit(ItemEditRequest request) {
         try {
             Item item = getItemById(request.getId());
 
@@ -121,13 +88,9 @@ public class ItemServiceImpl implements ItemService {
             item.setPrice(request.getPrice());
             Item savedItem = itemRepository.save(item);
 
-            ItemResponse itemResponse = itemSerializer.serialize(savedItem);
-
-            return AppResponse.<ItemResponse>builder()
-                    .success(true)
-                    .data(itemResponse)
-                    .message("Item updated successfully")
-                    .build();
+            return itemSerializer.serialize(savedItem, getStockByItem(savedItem));
+        } catch (AppException e) {
+            throw e;
         } catch (Exception e) {
             throw new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error!", e);
         }
@@ -135,16 +98,16 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional
-    public AppResponse<ItemResponse> delete(String id) {
+    public void delete(String id) {
         try {
             Item item = getItemById(id);
 
-            itemRepository.delete(item);
+            orderRepository.deleteAll(item.getOrders()); 
+            inventoryRepository.deleteAll(item.getInventories()); 
 
-            return AppResponse.<ItemResponse>builder()
-                    .success(true)
-                    .message("Item deleted successfully")
-                    .build();
+            itemRepository.delete(item);
+        } catch (AppException e) {
+            throw e;
         } catch (Exception e) {
             throw new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error!", e);
         }
@@ -160,5 +123,19 @@ public class ItemServiceImpl implements ItemService {
         }
         return itemRepository.findById(decodedId)
                 .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND.value(), "Item not found!"));
+    }
+
+    public Integer getStockByItem(Item item) {
+        if (item.getInventories() == null) {
+            return 0;
+        }
+
+        return item.getInventories().stream().distinct()
+                .mapToInt(inv -> inv.getType() == InventoryTypeEnum.T
+                        ? inv.getQty()
+                        : inv.getType() == InventoryTypeEnum.W
+                                ? -inv.getQty()
+                                : 0)
+                .sum();
     }
 }

@@ -2,6 +2,8 @@ package com.patria.test.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +17,10 @@ import com.patria.test.dto.request.ItemEditRequest;
 import com.patria.test.dto.request.ItemListRequest;
 import com.patria.test.dto.response.AppResponse;
 import com.patria.test.dto.response.ItemResponse;
+import com.patria.test.dto.response.PaginationResponse;
+import com.patria.test.entity.Item;
+import com.patria.test.exception.AppException;
+import com.patria.test.serializer.ItemSerializer;
 import com.patria.test.service.ItemService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,43 +32,82 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/v1/items")
+@RequestMapping("/v1/item")
 @Tag(name = "Item Controller")
 public class ItemController {
 
         private final ItemService itemService;
+        private final ItemSerializer itemSerializer;
 
         @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
         public AppResponse<List<ItemResponse>> items(
                         @RequestParam(required = false, defaultValue = "1") Integer page,
                         @RequestParam(required = false, defaultValue = "5") Integer perPage,
                         @RequestParam(required = false) String filter) {
-                ItemListRequest request = ItemListRequest.builder()
+
+                Page<Item> items = itemService.list(ItemListRequest.builder()
                                 .page(page)
                                 .perPage(perPage)
                                 .filter(filter)
-                                .build();
+                                .build());
 
-                return itemService.list(request);
+                return AppResponse.<List<ItemResponse>>builder()
+                                .success(true)
+                                .data(items.stream().map(item -> {
+                                        try {
+                                                return itemSerializer.serialize(item, itemService.getStockByItem(item));
+                                        } catch (Exception e) {
+                                                throw new AppException(HttpStatus.INTERNAL_SERVER_ERROR,
+                                                                "Internal server error!", e);
+                                        }
+                                }).toList())
+                                .pagination(PaginationResponse.builder()
+                                                .currentPage(items.getNumber() + 1)
+                                                .totalPage(items.getTotalPages())
+                                                .perPage(items.getSize())
+                                                .total(items.getTotalElements())
+                                                .count(items.getNumberOfElements())
+                                                .hasNext(items.hasNext())
+                                                .hasPrevious(items.hasPrevious())
+                                                .hasContent(items.hasContent())
+                                                .build())
+                                .message("Success get data")
+                                .build();
         }
 
         @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
         public AppResponse<ItemResponse> item(@PathVariable String id) {
-                return itemService.get(id);
+                return AppResponse.<ItemResponse>builder()
+                                .success(true)
+                                .data(itemService.get(id))
+                                .message("Success get data")
+                                .build();
         }
 
-        @PostMapping(path = "/save", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+        @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
         public AppResponse<ItemResponse> save(@Valid @RequestBody ItemSaveRequest request) {
-                return itemService.save(request);
+                return AppResponse.<ItemResponse>builder()
+                                .success(true)
+                                .data(itemService.save(request))
+                                .message("Item saved successfully")
+                                .build();
         }
 
-        @PutMapping(path = "/edit", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+        @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
         public AppResponse<ItemResponse> edit(@Valid @RequestBody ItemEditRequest request) {
-                return itemService.edit(request);
+                return AppResponse.<ItemResponse>builder()
+                                .success(true)
+                                .data(itemService.edit(request))
+                                .message("Item updated successfully")
+                                .build();
         }
 
         @DeleteMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
         public AppResponse<ItemResponse> delete(@PathVariable String id) {
-                return itemService.delete(id);
+                itemService.delete(id);
+                return AppResponse.<ItemResponse>builder()
+                    .success(true)
+                    .message("Item deleted successfully")
+                    .build();
         }
 }
