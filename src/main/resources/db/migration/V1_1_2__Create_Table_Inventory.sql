@@ -14,4 +14,5 @@ CREATE TABLE IF NOT EXISTS inventory (
 
 ALTER TABLE inventory
     ADD CONSTRAINT fk_inventory_item
-    FOREIGN KEY (item_id) REFERENCES item(id);
+    FOREIGN KEY (item_id) REFERENCES item(id)
+    ON DELETE CASCADE;

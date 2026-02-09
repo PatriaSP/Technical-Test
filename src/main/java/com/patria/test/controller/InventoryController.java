@@ -3,7 +3,6 @@ package com.patria.test.controller;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,9 +17,6 @@ import com.patria.test.dto.request.InventoryEditRequest;
 import com.patria.test.dto.response.AppResponse;
 import com.patria.test.dto.response.InventoryResponse;
 import com.patria.test.dto.response.PaginationResponse;
-import com.patria.test.entity.Inventory;
-import com.patria.test.exception.AppException;
-import com.patria.test.serializer.InventorySerializer;
 import com.patria.test.service.InventoryService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -31,12 +27,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/v1/inventory")
+@RequestMapping("/v1/inventories")
 @Tag(name = "Inventory Controller")
 public class InventoryController {
 
         private final InventoryService inventoryService;
-        private final InventorySerializer inventorySerializer;
 
         @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
         public AppResponse<List<InventoryResponse>> inventories(
@@ -44,21 +39,15 @@ public class InventoryController {
                         @RequestParam(required = false, defaultValue = "5") Integer perPage,
                         @RequestParam(required = false) String filter) {
 
-                Page<Inventory> inventories = inventoryService.list(InventoryListRequest.builder()
+                Page<InventoryResponse> inventories = inventoryService.list(InventoryListRequest.builder()
                                 .page(page)
                                 .perPage(perPage)
                                 .filter(filter)
                                 .build());
+                                
                 return AppResponse.<List<InventoryResponse>>builder()
                                 .success(true)
-                                .data(inventories.stream().map(item -> {
-                                        try {
-                                                return inventorySerializer.serialize(item);
-                                        } catch (Exception e) {
-                                                throw new AppException(HttpStatus.INTERNAL_SERVER_ERROR,
-                                                                "Internal server error!", e);
-                                        }
-                                }).toList())
+                                .data(inventories.toList())
                                 .pagination(PaginationResponse.builder()
                                                 .currentPage(inventories.getNumber() + 1)
                                                 .totalPage(inventories.getTotalPages())

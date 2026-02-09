@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.patria.test.dto.request.OrderEditRequest;
 import com.patria.test.dto.request.OrderSaveRequest;
 import com.patria.test.dto.response.OrderResponse;
-import com.patria.test.entity.Order;
 import com.patria.test.exception.AppException;
 import com.patria.test.serializer.OrderSerializer;
 import com.patria.test.service.OrderService;
@@ -55,24 +54,19 @@ class OrderControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private OrderResponse orderResponse;
-
     // Test list
     @Test
     void orders_success() throws Exception {
 
-        Page<?> pageData = new PageImpl<>(
-                List.of(new Order()),
+        Page<OrderResponse> pageData = new PageImpl<>(
+                List.of(new OrderResponse()),
                 PageRequest.of(0, 5),
                 1);
 
         Mockito.when(orderService.list(any()))
                 .thenReturn((Page) pageData);
 
-        Mockito.when(orderSerializer.serialize(any()))
-                .thenReturn(orderResponse);
-
-        mockMvc.perform(get("/v1/order")
+        mockMvc.perform(get("/v1/orders")
                 .param("page", "1")
                 .param("perPage", "5")
                 .param("filter", "")
@@ -97,7 +91,7 @@ class OrderControllerTest {
         Mockito.when(orderService.get(eq("O1")))
                 .thenReturn(response);
 
-        mockMvc.perform(get("/v1/order/{id}", "O1")
+        mockMvc.perform(get("/v1/orders/{id}", "O1")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
@@ -112,7 +106,7 @@ class OrderControllerTest {
         Mockito.when(orderService.get(eq("O999")))
                 .thenThrow(new AppException(HttpStatus.NOT_FOUND.value(), "Order not found!"));
 
-        mockMvc.perform(get("/v1/order/{id}", "O999")
+        mockMvc.perform(get("/v1/orders/{id}", "O999")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value(404))
@@ -134,7 +128,7 @@ class OrderControllerTest {
         Mockito.when(orderService.save(any()))
                 .thenReturn(response);
 
-        mockMvc.perform(post("/v1/order")
+        mockMvc.perform(post("/v1/orders")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -152,7 +146,7 @@ class OrderControllerTest {
                 .qty(null) // invalid
                 .build();
 
-        mockMvc.perform(post("/v1/order")
+        mockMvc.perform(post("/v1/orders")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -179,7 +173,7 @@ class OrderControllerTest {
         Mockito.when(orderService.edit(any()))
                 .thenReturn(response);
 
-        mockMvc.perform(put("/v1/order")
+        mockMvc.perform(put("/v1/orders")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -202,7 +196,7 @@ class OrderControllerTest {
         Mockito.when(orderService.edit(any()))
                 .thenThrow(new AppException(404, "Order not found!"));
 
-        mockMvc.perform(put("/v1/order")
+        mockMvc.perform(put("/v1/orders")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound())
@@ -225,7 +219,7 @@ class OrderControllerTest {
         Mockito.when(orderService.edit(any()))
                 .thenThrow(new AppException(404, "Item not found!"));
 
-        mockMvc.perform(put("/v1/order")
+        mockMvc.perform(put("/v1/orders")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound())
@@ -239,7 +233,7 @@ class OrderControllerTest {
 
         Mockito.doNothing().when(orderService).delete(eq("O1"));
 
-        mockMvc.perform(delete("/v1/order/{id}", "O1")
+        mockMvc.perform(delete("/v1/orders/{id}", "O1")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
@@ -253,7 +247,7 @@ class OrderControllerTest {
         Mockito.doThrow(new AppException(HttpStatus.NOT_FOUND.value(), "Order not found!"))
                 .when(orderService).delete(eq("O999"));
 
-        mockMvc.perform(delete("/v1/order/{id}", "O999")
+        mockMvc.perform(delete("/v1/orders/{id}", "O999")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value(404))

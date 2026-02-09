@@ -10,7 +10,7 @@ import com.patria.test.entity.Item;
 
 public interface ItemService {
 
-    Page<Item> list(ItemListRequest request);
+    Page<ItemResponse> list(ItemListRequest request);
 
     ItemResponse get(String id);
 
@@ -20,5 +20,5 @@ public interface ItemService {
 
     void delete(String id);
 
-    Integer getStockByItem(Item item);
+    Item getItemById(String id);
 }

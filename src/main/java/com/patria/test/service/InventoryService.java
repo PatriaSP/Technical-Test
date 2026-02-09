@@ -10,7 +10,7 @@ import com.patria.test.entity.Inventory;
 
 public interface InventoryService {
 
-    Page<Inventory> list(InventoryListRequest request);
+    Page<InventoryResponse> list(InventoryListRequest request);
 
     InventoryResponse get(String id);
 
@@ -20,4 +20,9 @@ public interface InventoryService {
 
     void delete(String id);
 
+    void delete(Long id);
+
+    void deleteAll(Iterable<Inventory> inventories);
+
+    Inventory save(Inventory inventory);
 }

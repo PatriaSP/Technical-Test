@@ -42,13 +42,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/v1/item?page=1&perPage=5",
+              "raw": "{{base_url}}/v1/items?page=1&perPage=5",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "v1",
-                "item"
+                "items"
               ],
               "query": [
                 {
@@ -81,13 +81,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/v1/item/8CWpNspq7fouXqQc5UoIJg==",
+              "raw": "{{base_url}}/v1/items/8CWpNspq7fouXqQc5UoIJg==",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "v1",
-                "item",
+                "items",
                 "8CWpNspq7fouXqQc5UoIJg=="
               ]
             }
@@ -126,13 +126,13 @@
               "raw": "{\n    \"name\": \"test\",\n    \"price\": 99\n}"
             },
             "url": {
-              "raw": "{{base_url}}/v1/item",
+              "raw": "{{base_url}}/v1/items",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "v1",
-                "item"
+                "items"
               ]
             }
           },
@@ -154,13 +154,13 @@
               "raw": "{\n    \"id\": \"8CWpNspq7fouXqQc5UoIJg==\",\n    \"name\": \"test\",\n    \"price\": 100\n}"
             },
             "url": {
-              "raw": "{{base_url}}/v1/item",
+              "raw": "{{base_url}}/v1/items",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "v1",
-                "item"
+                "items"
               ]
             }
           },
@@ -178,13 +178,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/v1/item/8CWpNspq7fouXqQc5UoIJg==",
+              "raw": "{{base_url}}/v1/items/8CWpNspq7fouXqQc5UoIJg==",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "v1",
-                "item",
+                "items",
                 "8CWpNspq7fouXqQc5UoIJg=="
               ]
             }
@@ -228,13 +228,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/v1/order?page=1&perPage=5",
+              "raw": "{{base_url}}/v1/orders?page=1&perPage=5",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "v1",
-                "order"
+                "orders"
               ],
               "query": [
                 {
@@ -267,14 +267,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/v1/order/8CWpNspq7fouXqQc5UoIJg==",
+              "raw": "{{base_url}}/v1/orders/O2",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "v1",
-                "order",
-                "8CWpNspq7fouXqQc5UoIJg=="
+                "orders",
+                "O2"
               ]
             }
           },
@@ -309,16 +309,16 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"itemId\": \"8CWpNspq7fouXqQc5UoIJg==\",\n    \"qty\": 5\n}"
+              "raw": "{\n    \"itemId\": \"DPKK8PkRGoL0XJgb5v-sFg==\",\n    \"qty\": 5\n}"
             },
             "url": {
-              "raw": "{{base_url}}/v1/order",
+              "raw": "{{base_url}}/v1/orders",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "v1",
-                "order"
+                "orders"
               ]
             }
           },
@@ -337,16 +337,16 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"id\": \"O1\",\n    \"itemId\": \"8CWpNspq7fouXqQc5UoIJg==\",\n    \"qty\": 10\n}"
+              "raw": "{\n    \"orderNo\": \"O8\",\n    \"itemId\": \"8CWpNspq7fouXqQc5UoIJg==\",\n    \"qty\": 1\n}"
             },
             "url": {
-              "raw": "{{base_url}}/v1/order",
+              "raw": "{{base_url}}/v1/orders",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "v1",
-                "order"
+                "orders"
               ]
             }
           },
@@ -364,14 +364,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/v1/order/8CWpNspq7fouXqQc5UoIJg==",
+              "raw": "{{base_url}}/v1/orders/O2",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "v1",
-                "order",
-                "8CWpNspq7fouXqQc5UoIJg=="
+                "orders",
+                "O2"
               ]
             }
           },
@@ -414,13 +414,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/v1/inventory?page=1&perPage=5",
+              "raw": "{{base_url}}/v1/inventories?page=1&perPage=5",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "v1",
-                "inventory"
+                "inventories"
               ],
               "query": [
                 {
@@ -453,14 +453,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/v1/inventory/8CWpNspq7fouXqQc5UoIJg==",
+              "raw": "{{base_url}}/v1/inventories/JZFtOD75J-sFAZ1Jm_43kQ==",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "v1",
-                "inventory",
-                "8CWpNspq7fouXqQc5UoIJg=="
+                "inventories",
+                "JZFtOD75J-sFAZ1Jm_43kQ=="
               ]
             }
           },
@@ -495,16 +495,16 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"itemId\": \"8CWpNspq7fouXqQc5UoIJg==\",\n    \"quantity\": 100\n}"
+              "raw": "{\n    \"itemId\": \"DPKK8PkRGoL0XJgb5v-sFg==\",\n    \"qty\": 100,\n    \"type\": \"T\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/v1/inventory",
+              "raw": "{{base_url}}/v1/inventories",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "v1",
-                "inventory"
+                "inventories"
               ]
             }
           },
@@ -523,16 +523,16 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"id\": \"8CWpNspq7fouXqQc5UoIJg==\",\n    \"itemId\": \"DPKK8PkRGoL0XJgb5v-sFg==\",\n    \"quantity\": 150\n}"
+              "raw": "{\n    \"id\": \"JZFtOD75J-sFAZ1Jm_43kQ==\",\n    \"itemId\": \"DPKK8PkRGoL0XJgb5v-sFg==\",\n    \"qty\": 1500,\n    \"type\": \"W\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/v1/inventory",
+              "raw": "{{base_url}}/v1/inventories",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "v1",
-                "inventory"
+                "inventories"
               ]
             }
           },
@@ -550,14 +550,14 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/v1/inventory/DPKK8PkRGoL0XJgb5v-sFg==",
+              "raw": "{{base_url}}/v1/inventory/JZFtOD75J-sFAZ1Jm_43kQ==",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "v1",
                 "inventory",
-                "DPKK8PkRGoL0XJgb5v-sFg=="
+                "JZFtOD75J-sFAZ1Jm_43kQ=="
               ]
             }
           },

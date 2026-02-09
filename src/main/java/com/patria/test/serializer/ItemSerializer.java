@@ -9,7 +9,7 @@ import com.patria.test.util.AESUtil;
 @Service
 public class ItemSerializer {
 
-    public ItemResponse serialize(Item data, Integer stock) throws Exception{
+    public ItemResponse serialize(Item data, Integer stock) {
         return ItemResponse.builder()
                 .id(AESUtil.encrypt(data.getId().toString()))
                 .name(data.getName())

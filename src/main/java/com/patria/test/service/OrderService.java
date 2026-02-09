@@ -10,7 +10,7 @@ import com.patria.test.entity.Order;
 
 public interface OrderService {
 
-    Page<Order> list(OrderListRequest request);
+    Page<OrderResponse> list(OrderListRequest request);
 
     OrderResponse get(String id);
 
@@ -20,4 +20,5 @@ public interface OrderService {
 
     void delete(String id);
 
+    void deleteAll(Iterable<Order> orders);
 }

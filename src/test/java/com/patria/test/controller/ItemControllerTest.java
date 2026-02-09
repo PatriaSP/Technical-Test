@@ -9,8 +9,10 @@ import com.patria.test.exception.AppException;
 import com.patria.test.serializer.ItemSerializer;
 import com.patria.test.service.ItemService;
 import com.patria.test.util.AESUtil;
+import com.patria.test.util.StockUtil;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,10 +63,8 @@ class ItemControllerTest {
         @Test
         void items_success() throws Exception {
 
-                Item item = new Item();
-
-                Page<Item> pageData = new PageImpl<>(
-                                List.of(item),
+                Page<ItemResponse> pageData = new PageImpl<>(
+                                List.of(new ItemResponse()),
                                 PageRequest.of(0, 5),
                                 1);
 
@@ -76,13 +76,12 @@ class ItemControllerTest {
                 Mockito.when(itemService.list(any()))
                                 .thenReturn(pageData);
 
-                Mockito.when(itemService.getStockByItem(any(Item.class)))
-                                .thenReturn(100);
+                try (MockedStatic<StockUtil> mockedStock = Mockito.mockStatic(StockUtil.class)) {
+                        mockedStock.when(() -> StockUtil.getStockByItem(Mockito.any(Item.class)))
+                                        .thenReturn(100);
+                }
 
-                Mockito.when(itemSerializer.serialize(any(Item.class), eq(100)))
-                                .thenReturn(response);
-
-                mockMvc.perform(get("/v1/item")
+                mockMvc.perform(get("/v1/items")
                                 .param("page", "1")
                                 .param("perPage", "5")
                                 .param("filter", "")
@@ -110,7 +109,7 @@ class ItemControllerTest {
                 Mockito.when(itemService.get(eq("1")))
                                 .thenReturn(response);
 
-                mockMvc.perform(get("/v1/item/{id}", "1")
+                mockMvc.perform(get("/v1/items/{id}", "1")
                                 .contentType(MediaType.APPLICATION_JSON))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.success").value(true))
@@ -127,7 +126,7 @@ class ItemControllerTest {
                 Mockito.when(itemService.get(eq(encryptedId)))
                                 .thenThrow(new AppException(HttpStatus.NOT_FOUND.value(), "Item not found!"));
 
-                mockMvc.perform(get("/v1/item/{id}", encryptedId)
+                mockMvc.perform(get("/v1/items/{id}", encryptedId)
                                 .contentType(MediaType.APPLICATION_JSON))
                                 .andExpect(status().isNotFound())
                                 .andExpect(jsonPath("$.code").value(404))
@@ -151,7 +150,7 @@ class ItemControllerTest {
                 Mockito.when(itemService.save(any()))
                                 .thenReturn(response);
 
-                mockMvc.perform(post("/v1/item")
+                mockMvc.perform(post("/v1/items")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))
                                 .andExpect(status().isOk())
@@ -169,7 +168,7 @@ class ItemControllerTest {
                                 .price(null) // invalid if @NotNull
                                 .build();
 
-                mockMvc.perform(post("/v1/item")
+                mockMvc.perform(post("/v1/items")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))
                                 .andExpect(status().isBadRequest())
@@ -197,7 +196,7 @@ class ItemControllerTest {
                 Mockito.when(itemService.edit(any()))
                                 .thenReturn(response);
 
-                mockMvc.perform(put("/v1/item")
+                mockMvc.perform(put("/v1/items")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))
                                 .andExpect(status().isOk())
@@ -219,7 +218,7 @@ class ItemControllerTest {
                 Mockito.when(itemService.edit(any()))
                                 .thenThrow(new AppException(404, "Item not found!"));
 
-                mockMvc.perform(put("/v1/item")
+                mockMvc.perform(put("/v1/items")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))
                                 .andExpect(status().isNotFound())
@@ -234,7 +233,7 @@ class ItemControllerTest {
                 String encryptedId = AESUtil.encrypt("1");
                 Mockito.doNothing().when(itemService).delete(eq(encryptedId));
 
-                mockMvc.perform(delete("/v1/item/{id}", encryptedId)
+                mockMvc.perform(delete("/v1/items/{id}", encryptedId)
                                 .contentType(MediaType.APPLICATION_JSON))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.success").value(true))
@@ -249,7 +248,7 @@ class ItemControllerTest {
                 Mockito.doThrow(new AppException(HttpStatus.NOT_FOUND.value(), "Item not found!"))
                                 .when(itemService).delete(eq(encryptedId));
 
-                mockMvc.perform(delete("/v1/item/{id}", encryptedId)
+                mockMvc.perform(delete("/v1/items/{id}", encryptedId)
                                 .contentType(MediaType.APPLICATION_JSON))
                                 .andExpect(status().isNotFound())
                                 .andExpect(jsonPath("$.code").value(404))

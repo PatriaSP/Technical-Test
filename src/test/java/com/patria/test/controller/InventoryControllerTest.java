@@ -2,10 +2,10 @@ package com.patria.test.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.patria.test.dto.request.InventoryEditRequest;
+import com.patria.test.dto.request.InventoryListRequest;
 import com.patria.test.dto.request.InventorySaveRequest;
 import com.patria.test.dto.response.InventoryResponse;
 import com.patria.test.dto.type.InventoryTypeEnum;
-import com.patria.test.entity.Inventory;
 import com.patria.test.exception.AppException;
 import com.patria.test.serializer.InventorySerializer;
 import com.patria.test.service.InventoryService;
@@ -56,24 +56,20 @@ class InventoryControllerTest {
         @Autowired
         private ObjectMapper objectMapper;
 
-        private InventoryResponse inventoryResponse;
 
         // Test list
         @Test
         void inventories_success() throws Exception {
 
-                Page<?> pageData = new PageImpl<>(
-                                List.of(new Inventory()),
+                Page<InventoryResponse> pageData = new PageImpl<>(
+                                List.of(new InventoryResponse()),
                                 PageRequest.of(0, 5),
                                 1);
 
-                Mockito.when(inventoryService.list(any()))
-                                .thenReturn((Page) pageData);
+                Mockito.when(inventoryService.list(Mockito.any(InventoryListRequest.class)))
+                                .thenReturn(pageData);
 
-                Mockito.when(inventorySerializer.serialize(any()))
-                                .thenReturn(inventoryResponse);
-
-                mockMvc.perform(get("/v1/inventory")
+                mockMvc.perform(get("/v1/inventories")
                                 .param("page", "1")
                                 .param("perPage", "5")
                                 .param("filter", "")
@@ -100,7 +96,7 @@ class InventoryControllerTest {
                 Mockito.when(inventoryService.get(eq(encryptedId)))
                                 .thenReturn(response);
 
-                mockMvc.perform(get("/v1/inventory/{id}", encryptedId)
+                mockMvc.perform(get("/v1/inventories/{id}", encryptedId)
                                 .contentType(MediaType.APPLICATION_JSON))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.success").value(true))
@@ -117,7 +113,7 @@ class InventoryControllerTest {
                 Mockito.when(inventoryService.get(eq(encryptedId)))
                                 .thenThrow(new AppException(HttpStatus.NOT_FOUND.value(), "Inventory not found!"));
 
-                mockMvc.perform(get("/v1/inventory/{id}", encryptedId)
+                mockMvc.perform(get("/v1/inventories/{id}", encryptedId)
                                 .contentType(MediaType.APPLICATION_JSON))
                                 .andExpect(status().isNotFound())
                                 .andExpect(jsonPath("$.code").value(404))
@@ -138,10 +134,10 @@ class InventoryControllerTest {
                                 .id(AESUtil.encrypt("1"))
                                 .build();
 
-                Mockito.when(inventoryService.save(any()))
+                Mockito.when(inventoryService.save(Mockito.any(InventorySaveRequest.class)))
                                 .thenReturn(response);
 
-                mockMvc.perform(post("/v1/inventory")
+                mockMvc.perform(post("/v1/inventories")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))
                                 .andExpect(status().isOk())
@@ -160,7 +156,7 @@ class InventoryControllerTest {
                                 .type(InventoryTypeEnum.T)
                                 .build();
 
-                mockMvc.perform(post("/v1/inventory")
+                mockMvc.perform(post("/v1/inventories")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))
                                 .andExpect(status().isBadRequest())
@@ -185,10 +181,10 @@ class InventoryControllerTest {
                                 .id(encryptedId)
                                 .build();
 
-                Mockito.when(inventoryService.save(any()))
+                Mockito.when(inventoryService.save(Mockito.any(InventorySaveRequest.class)))
                                 .thenReturn(response);
 
-                mockMvc.perform(put("/v1/inventory")
+                mockMvc.perform(put("/v1/inventories")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))
                                 .andExpect(status().isOk())
@@ -213,7 +209,7 @@ class InventoryControllerTest {
                 Mockito.when(inventoryService.edit(any()))
                                 .thenThrow(new AppException(404, "Inventory not found!"));
 
-                mockMvc.perform(put("/v1/inventory")
+                mockMvc.perform(put("/v1/inventories")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))
                                 .andExpect(status().isNotFound())
@@ -237,7 +233,7 @@ class InventoryControllerTest {
                 Mockito.when(inventoryService.edit(any()))
                                 .thenThrow(new AppException(404, "Item not found!"));
 
-                mockMvc.perform(put("/v1/inventory")
+                mockMvc.perform(put("/v1/inventories")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))
                                 .andExpect(status().isNotFound())
@@ -251,7 +247,7 @@ class InventoryControllerTest {
                 String encryptedId = AESUtil.encrypt("1");
                 Mockito.doNothing().when(inventoryService).delete(eq(encryptedId));
 
-                mockMvc.perform(delete("/v1/inventory/{id}", encryptedId)
+                mockMvc.perform(delete("/v1/inventories/{id}", encryptedId)
                                 .contentType(MediaType.APPLICATION_JSON))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.success").value(true))
@@ -265,7 +261,7 @@ class InventoryControllerTest {
                 Mockito.doThrow(new AppException(HttpStatus.NOT_FOUND.value(), "Inventory not found!"))
                                 .when(inventoryService).delete(eq(encryptedId));
 
-                mockMvc.perform(delete("/v1/inventory/{id}", encryptedId)
+                mockMvc.perform(delete("/v1/inventories/{id}", encryptedId)
                                 .contentType(MediaType.APPLICATION_JSON))
                                 .andExpect(status().isNotFound())
                                 .andExpect(jsonPath("$.code").value(404))

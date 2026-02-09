@@ -38,23 +38,28 @@ public class AESUtil {
 
     private static final String ALGORITHM = "AES";
 
-    public static SecretKey generateKey(String keyStr) throws Exception {
+    public static SecretKey generateKey(String keyStr){
         byte[] keyBytes = keyStr.getBytes();
         return new SecretKeySpec(keyBytes, ALGORITHM);
     }
 
-    public static String encrypt(String data) throws Exception {
-        SecretKey key = generateKey(secretKey);
-        Cipher cipher = Cipher.getInstance(ALGORITHM);
-        cipher.init(Cipher.ENCRYPT_MODE, key);
-        byte[] encryptedBytes = cipher.doFinal(data.getBytes());
-        return Base64.getEncoder().encodeToString(encryptedBytes).replace("/", "_").replace("+", "-");
+    public static String encrypt(String data) {
+        try {
+            SecretKey key = generateKey(secretKey);
+            Cipher cipher = Cipher.getInstance(ALGORITHM);
+            cipher.init(Cipher.ENCRYPT_MODE, key);
+            byte[] encryptedBytes = cipher.doFinal(data.getBytes());
+            return Base64.getEncoder().encodeToString(encryptedBytes).replace("/", "_").replace("+", "-");
+        } catch (Exception ex) {
+            throw new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error!", ex);
+        }
     }
 
     public static String decrypt(String encryptedData, SecretKey key) throws Exception {
         Cipher cipher = Cipher.getInstance(ALGORITHM);
         cipher.init(Cipher.DECRYPT_MODE, key);
-        byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedData.replace("_", "/").replace("-", "+")));
+        byte[] decryptedBytes = cipher
+                .doFinal(Base64.getDecoder().decode(encryptedData.replace("_", "/").replace("-", "+")));
         return new String(decryptedBytes);
     }
 
@@ -82,9 +87,9 @@ public class AESUtil {
         }
     }
 
-    public static String aes256CbcEncrypt(byte[] ivByte, String key, String value){
+    public static String aes256CbcEncrypt(byte[] ivByte, String key, String value) {
         try {
-            String cipherMode = "AES/CBC/PKCS5Padding"; 
+            String cipherMode = "AES/CBC/PKCS5Padding";
             SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES");
             IvParameterSpec iv = new IvParameterSpec(ivByte);
             Cipher cipher = Cipher.getInstance(cipherMode);
@@ -93,9 +98,10 @@ public class AESUtil {
             byte[] encrypted = cipher.doFinal(value.getBytes("UTF-8"));
 
             return Base64.getEncoder().encodeToString(encrypted);
-        } catch (UnsupportedEncodingException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException ex) {
+        } catch (UnsupportedEncodingException | NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException
+                | InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException ex) {
             throw new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error!", ex);
-        }      
+        }
     }
 
     public static String hmacSha512Base64(String data, String key) {
