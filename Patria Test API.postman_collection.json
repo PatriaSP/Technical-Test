@@ -550,13 +550,13 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/v1/inventory/JZFtOD75J-sFAZ1Jm_43kQ==",
+              "raw": "{{base_url}}/v1/inventories/JZFtOD75J-sFAZ1Jm_43kQ==",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "v1",
-                "inventory",
+                "inventories",
                 "JZFtOD75J-sFAZ1Jm_43kQ=="
               ]
             }
